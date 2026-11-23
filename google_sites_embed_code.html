@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>hi, i'm anokhi — digital playground</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      min-height: 100vh;
+      overflow: hidden;
+      background-color: #163e37;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      user-select: none;
+    }
+
+    #pondCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: 0;
+      cursor: pointer;
+    }
+
+    .font-editorial {
+      font-family: 'Instrument Serif', Georgia, serif;
+    }
+
+    .name-pink-gradient {
+      background: linear-gradient(135deg, #ffd6e5 0%, #f9a8c9 48%, #f472b6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      padding-right: 0.08em;
+    }
+
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      box-shadow: 0 8px 24px rgba(7, 26, 23, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+                  background-color 0.25s ease,
+                  border-color 0.25s ease,
+                  box-shadow 0.25s ease;
+    }
+
+    .glass-pill:hover {
+      background: rgba(255, 255, 255, 0.24);
+      border-color: rgba(255, 255, 255, 0.44);
+      box-shadow: 0 12px 28px rgba(7, 26, 23, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+
+    .glass-pill:active {
+      transform: scale(0.96);
+    }
+
+    .fish-nav-pill {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 15;
+      pointer-events: auto;
+      will-change: transform;
+      white-space: nowrap;
+    }
+
+    .fish-nav-pill.is-hovered {
+      background: rgba(255, 255, 255, 0.28);
+      border-color: rgba(253, 224, 71, 0.65);
+      box-shadow: 0 10px 28px rgba(7, 26, 23, 0.35), 0 0 18px rgba(253, 224, 71, 0.25);
+    }
+
+    .modal-backdrop {
+      background: rgba(11, 33, 29, 0.58);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-card {
+      background: linear-gradient(160deg, rgba(28, 72, 64, 0.94) 0%, rgba(18, 49, 44, 0.96) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 24px 60px rgba(4, 18, 15, 0.55);
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+    }
+
+    .modal-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+    .modal-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .modal-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.22);
+      border-radius: 9999px;
+    }
+
+    @keyframes floatFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-hero {
+      animation: floatFadeIn 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+  </style>
+</head>
+<body class="text-white antialiased">
+
+  <canvas id="pondCanvas"></canvas>
+  <div id="fishNavLayer" class="fixed inset-0 z-15 pointer-events-none"></div>
+
+  <main id="heroOverlay" class="relative z-10 flex flex-col items-center justify-center w-full h-full px-6 text-center pointer-events-none transition-opacity duration-500">
+    <div id="heroContent" class="max-w-xl mx-auto flex flex-col items-center animate-hero">
+      <h1 id="heroTitle" class="font-editorial text-5xl sm:text-7xl md:text-[5.25rem] leading-none tracking-tight text-white/95 drop-shadow-[0_4px_24px_rgba(6,24,21,0.45)]">
+        <span class="font-normal">hi, i’m </span><span id="displayName" class="italic font-normal name-pink-gradient">anokhi</span>
+      </h1>
+      <p id="displaySubtitle" class="mt-3 sm:mt-4 text-xs sm:text-sm md:text-[15px] font-light tracking-wide text-white/80 drop-shadow-[0_2px_10px_rgba(6,24,21,0.45)]">
+        welcome to my digital playground :)
+      </p>
+      <p id="pondHint" class="mt-6 text-[11px] tracking-widest uppercase text-white/45 transition-opacity duration-700">
+        follow a koi or tap the water
+      </p>
+    </div>
+  </main>
+
+  <div class="fixed bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 z-20 flex items-center justify-between pointer-events-none">
+    <div class="flex items-center gap-2 pointer-events-auto">
+      <button id="soundToggleBtn" type="button" aria-label="Toggle water chimes"
+        class="glass-pill px-3.5 py-2 rounded-full text-xs text-white/85 hover:text-white flex items-center gap-1.5 cursor-pointer">
+        <span id="soundIcon">🔇</span>
+        <span class="hidden sm:inline">water chimes</span>
+      </button>
+
+      <button id="zenToggleBtn" type="button" aria-label="Toggle Zen Mode"
+        class="glass-pill px-3.5 py-2 rounded-full text-xs text-white/85 hover:text-white flex items-center gap-1.5 cursor-pointer">
+        <span>🌿</span>
+        <span id="zenLabel">zen mode</span>
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2 pointer-events-auto">
+      <button id="feedFishBtn" type="button"
+        class="glass-pill px-3.5 py-2 rounded-full text-xs text-white/85 hover:text-white flex items-center gap-1.5 cursor-pointer">
+        <span>✨</span>
+        <span>scatter food</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="modalBackdrop" class="fixed inset-0 z-30 hidden items-center justify-center p-4 sm:p-6 modal-backdrop opacity-0">
+    <div id="modalCard" class="modal-card w-full max-w-2xl rounded-3xl p-6 sm:p-8 text-white transform scale-95 opacity-0 max-h-[86vh] flex flex-col">
+      <div class="flex items-center justify-between gap-4 pb-4 border-b border-white/15">
+        <button id="backToPondBtn" type="button"
+          class="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs text-white/85 hover:text-white transition flex items-center gap-1.5 cursor-pointer">
+          <span>←</span>
+          <span>back to pond</span>
+        </button>
+
+        <div id="modalQuickTabs" class="hidden sm:flex items-center gap-1.5">
+          <button type="button" data-modal-tab="about" class="quick-tab-btn px-3 py-1 rounded-full text-[11px] bg-white/10 hover:bg-white/20 text-white/80 transition cursor-pointer">about me</button>
+          <button type="button" data-modal-tab="projects" class="quick-tab-btn px-3 py-1 rounded-full text-[11px] bg-white/10 hover:bg-white/20 text-white/80 transition cursor-pointer">projects</button>
+          <button type="button" data-modal-tab="work" class="quick-tab-btn px-3 py-1 rounded-full text-[11px] bg-white/10 hover:bg-white/20 text-white/80 transition cursor-pointer">work</button>
+          <button type="button" data-modal-tab="leadership" class="quick-tab-btn px-3 py-1 rounded-full text-[11px] bg-white/10 hover:bg-white/20 text-white/80 transition cursor-pointer">leadership</button>
+        </div>
+
+        <button id="closeModalBtn" type="button" aria-label="Close modal"
+          class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white transition cursor-pointer">
+          ✕
+        </button>
+      </div>
+
+      <div class="pt-5 pb-3">
+        <p id="modalEyebrow" class="text-[11px] uppercase tracking-[0.2em] text-emerald-200/75 mb-1">section</p>
+        <h2 id="modalTitle" class="font-editorial text-3xl sm:text-4xl text-white">Modal Title</h2>
+      </div>
+
+      <div id="modalBody" class="modal-scroll overflow-y-auto pr-1 space-y-4 text-sm text-white/85 leading-relaxed"></div>
+    </div>
+  </div>
+
+  <div id="toastBanner" class="fixed top-5 left-1/2 -translate-x-1/2 z-40 pointer-events-none opacity-0 transition-all duration-300 transform -translate-y-2">
+    <div class="glass-pill px-4 py-2 rounded-full text-xs text-white/95 shadow-lg">
+      <span id="toastText">Saved!</span>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * ============================================================================
+     * GOOGLE SITES IMAGE CONFIGURATION
+     * Because Google Sites "Embed Code" runs in a sandboxed iframe without local
+     * folders, replace the URLs below with direct public image links (e.g., from
+     * GitHub Pages, Imgur, or Google Drive direct links) if you paste raw HTML!
+     * ============================================================================
+     */
+    const IMAGE_URLS = {
+      aboutPhoto: "images/anokhi.jpg",
+      spotifyProject: "images/spotify-project.jpg",
+      bumaHorizon: "images/buma-horizon.jpg",
+      eyTechx: "images/ey-techx.jpg",
+      belleLogo: "images/belle-logo.png",
+      museumLogo: "images/museum-logo.png",
+      bumaLogo: "images/buma-logo.png",
+      mapLogo: "images/map-logo.png",
+      bhangraLogo: "images/bhangra-logo.png",
+      hscLogo: "images/hsc-logo.png",
+      absaLogo: "images/absa-logo.png",
+      elpLogo: "images/elp-logo.png"
+    };
+
+    const canvas = document.getElementById('pondCanvas');
+    const ctx = canvas.getContext('2d');
+    const fishNavLayer = document.getElementById('fishNavLayer');
+
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    let zenMode = false;
+    let soundEnabled = false;
+    let audioCtx = null;
+    let hasInteracted = false;
+
+    let koiList = [];
+    let lilyPads = [];
+    let ripples = [];
+    let foodCrumbs = [];
+    let floatingPetals = [];
+
+    const HERO_FISH_PAGES = [
+      { key: 'about', label: 'about me' },
+      { key: 'projects', label: 'projects' },
+      { key: 'work', label: 'work' },
+      { key: 'leadership', label: 'leadership' }
+    ];
+
+    const KOI_PALETTES = [
+      {
+        base: '#f6f4ef',
+        belly: '#dfd9ce',
+        fin: 'rgba(255, 250, 242, 0.58)',
+        spots: [
+          { t: 0.16, r: 0.85, color: '#e65c35', offset: 0.05 },
+          { t: 0.38, r: 0.95, color: '#d94b26', offset: -0.15 },
+          { t: 0.58, r: 0.72, color: '#e65c35', offset: 0.12 }
+        ]
+      },
+      {
+        base: '#f2b84b',
+        belly: '#d6972b',
+        fin: 'rgba(252, 214, 126, 0.55)',
+        spots: [
+          { t: 0.25, r: 0.75, color: '#e39624', offset: 0 },
+          { t: 0.52, r: 0.65, color: '#fae09e', offset: 0.1 }
+        ]
+      },
+      {
+        base: '#f3efe6',
+        belly: '#d6cfc2',
+        fin: 'rgba(248, 244, 236, 0.55)',
+        spots: [
+          { t: 0.2, r: 0.88, color: '#e05334', offset: -0.1 },
+          { t: 0.45, r: 0.82, color: '#e05334', offset: 0.14 },
+          { t: 0.33, r: 0.48, color: '#2b3033', offset: 0.25 },
+          { t: 0.62, r: 0.42, color: '#2b3033', offset: -0.2 }
+        ]
+      },
+      {
+        base: '#f0825f',
+        belly: '#cf6140',
+        fin: 'rgba(252, 178, 152, 0.52)',
+        spots: [
+          { t: 0.18, r: 0.78, color: '#faf6f0', offset: 0.08 },
+          { t: 0.48, r: 0.72, color: '#faf6f0', offset: -0.12 }
+        ]
+      }
+    ];
+
+    function resize() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function playWaterChime() {
+      if (!soundEnabled) return;
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const notes = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5];
+        const freq = notes[Math.floor(Math.random() * notes.length)];
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.015, now + 0.6);
+
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.045, now + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 1.15);
+      } catch (e) {}
+    }
+
+    class Ripple {
+      constructor(x, y, maxRadius = 110, speed = 1.45, alpha = 0.45) {
+        this.x = x;
+        this.y = y;
+        this.radius = 4;
+        this.maxRadius = maxRadius;
+        this.speed = speed;
+        this.alpha = alpha;
+      }
+      update() {
+        this.radius += this.speed;
+        this.speed *= 0.985;
+        this.alpha *= 0.968;
+      }
+      draw(ctx) {
+        if (this.alpha <= 0.01) return;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(215, 248, 240, ${this.alpha})`;
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+
+        if (this.radius > 18) {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius * 0.68, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(215, 248, 240, ${this.alpha * 0.55})`;
+          ctx.lineWidth = 0.9;
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+
+    class FoodCrumb {
+      constructor(x, y) {
+        this.x = x + (Math.random() - 0.5) * 18;
+        this.y = y + (Math.random() - 0.5) * 18;
+        this.vx = (Math.random() - 0.5) * 0.35;
+        this.vy = (Math.random() - 0.5) * 0.35;
+        this.radius = 2.6 + Math.random() * 1.4;
+        this.life = 1.0;
+        this.decay = 0.0022 + Math.random() * 0.001;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vx *= 0.97;
+        this.vy *= 0.97;
+        this.life -= this.decay;
+      }
+      draw(ctx) {
+        if (this.life <= 0) return;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius * Math.min(1, this.life * 2), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 232, 178, ${this.life * 0.85})`;
+        ctx.shadowColor = 'rgba(255, 232, 178, 0.6)';
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    class LilyPad {
+      constructor(x, y, radius, hasFlower = false, flowerColor = '#f4a9be') {
+        this.baseX = x;
+        this.baseY = y;
+        this.x = x;
+        this.y = y;
+        this.vx = 0;
+        this.vy = 0;
+        this.radius = radius;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotSpeed = (Math.random() - 0.5) * 0.0012;
+        this.bobPhase = Math.random() * Math.PI * 2;
+        this.hasFlower = hasFlower;
+        this.flowerColor = flowerColor;
+        this.padHue = Math.random() > 0.5 ? '#487a5b' : '#3d6b4f';
+      }
+      update(time) {
+        this.bobPhase += 0.015;
+        this.rotation += this.rotSpeed;
+        const targetX = this.baseX + Math.cos(time * 0.0005 + this.bobPhase) * 6;
+        const targetY = this.baseY + Math.sin(time * 0.0006 + this.bobPhase) * 6;
+        this.vx += (targetX - this.x) * 0.008;
+        this.vy += (targetY - this.y) * 0.008;
+        this.vx *= 0.92;
+        this.vy *= 0.92;
+        this.x += this.vx;
+        this.y += this.vy;
+      }
+      nudge(sourceX, sourceY) {
+        const dx = this.x - sourceX;
+        const dy = this.y - sourceY;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 170 && dist > 1) {
+          const force = (1 - dist / 170) * 2.2;
+          this.vx += (dx / dist) * force;
+          this.vy += (dy / dist) * force;
+        }
+      }
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.save();
+        ctx.translate(8, 12);
+        ctx.rotate(this.rotation);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, this.radius, 0.14 * Math.PI, 1.86 * Math.PI);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(6, 22, 19, 0.34)';
+        ctx.fill();
+        ctx.restore();
+
+        ctx.rotate(this.rotation);
+        const grad = ctx.createRadialGradient(-this.radius * 0.2, -this.radius * 0.2, 4, 0, 0, this.radius);
+        grad.addColorStop(0, '#639975');
+        grad.addColorStop(0.7, this.padHue);
+        grad.addColorStop(1, '#2b523b');
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, this.radius, 0.14 * Math.PI, 1.86 * Math.PI);
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(166, 217, 180, 0.28)';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(185, 230, 196, 0.16)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 7; i++) {
+          const a = 0.28 * Math.PI + (i / 6) * (1.44 * Math.PI);
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(Math.cos(a) * (this.radius * 0.86), Math.sin(a) * (this.radius * 0.86));
+          ctx.stroke();
+        }
+        if (this.hasFlower) {
+          this.drawLotus(ctx, this.radius * 0.44);
+        }
+        ctx.restore();
+      }
+      drawLotus(ctx, size) {
+        const outerPetals = 8;
+        const innerPetals = 6;
+        for (let i = 0; i < outerPetals; i++) {
+          ctx.save();
+          ctx.rotate((i / outerPetals) * Math.PI * 2);
+          ctx.beginPath();
+          ctx.ellipse(size * 0.55, 0, size * 0.55, size * 0.24, 0, 0, Math.PI * 2);
+          ctx.fillStyle = this.flowerColor;
+          ctx.fill();
+          ctx.restore();
+        }
+        for (let i = 0; i < innerPetals; i++) {
+          ctx.save();
+          ctx.rotate((i / innerPetals) * Math.PI * 2 + 0.25);
+          ctx.beginPath();
+          ctx.ellipse(size * 0.36, 0, size * 0.38, size * 0.18, 0, 0, Math.PI * 2);
+          ctx.fillStyle = '#fde6ee';
+          ctx.fill();
+          ctx.restore();
+        }
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.2, 0, Math.PI * 2);
+        ctx.fillStyle = '#f5c451';
+        ctx.fill();
+      }
+    }
+
+    class KoiFish {
+      constructor(x, y, scale, palette, navConfig = null) {
+        this.x = x;
+        this.y = y;
+        this.scale = scale;
+        this.palette = palette;
+        this.navConfig = navConfig;
+        this.isHovered = false;
+
+        this.angle = Math.random() * Math.PI * 2;
+        this.baseSpeed = (navConfig ? 0.92 : 1.05) + Math.random() * 0.45;
+        this.speed = this.baseSpeed;
+        this.swimPhase = Math.random() * Math.PI * 2;
+        this.wanderAngle = this.angle;
+
+        this.numSegments = 11;
+        this.segSpacing = 8.2 * this.scale;
+        this.segments = [];
+        for (let i = 0; i < this.numSegments; i++) {
+          this.segments.push({
+            x: this.x - Math.cos(this.angle) * i * this.segSpacing,
+            y: this.y - Math.sin(this.angle) * i * this.segSpacing
+          });
+        }
+        this.radii = [7.5, 9.6, 10.4, 9.8, 8.6, 7.1, 5.6, 4.2, 3.0, 2.0, 1.2].map(r => r * this.scale);
+        this.pillX = x;
+        this.pillY = y + 36;
+        this.pillEl = null;
+
+        if (this.navConfig) {
+          this.createNavPill();
+        }
+      }
+
+      createNavPill() {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.dataset.page = this.navConfig.key;
+        btn.className = 'glass-pill fish-nav-pill px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-[13px] font-normal text-white/95 flex items-center gap-1.5 cursor-pointer';
+        btn.innerHTML = `<span>${this.navConfig.label}</span><span class="text-white/75">→</span>`;
+
+        btn.addEventListener('mouseenter', () => {
+          this.isHovered = true;
+          btn.classList.add('is-hovered');
+        });
+        btn.addEventListener('mouseleave', () => {
+          this.isHovered = false;
+          btn.classList.remove('is-hovered');
+        });
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openModal(this.navConfig.key);
+        });
+
+        fishNavLayer.appendChild(btn);
+        this.pillEl = btn;
+      }
+
+      update() {
+        const hoverSlowFactor = this.isHovered ? 0.32 : 1.0;
+        let targetFood = null;
+        let closestDist = 260;
+
+        for (const crumb of foodCrumbs) {
+          if (crumb.life <= 0.05) continue;
+          const d = Math.hypot(crumb.x - this.x, crumb.y - this.y);
+          if (d < closestDist) {
+            closestDist = d;
+            targetFood = crumb;
+          }
+        }
+
+        if (targetFood) {
+          const desiredAngle = Math.atan2(targetFood.y - this.y, targetFood.x - this.x);
+          this.angle = this.lerpAngle(this.angle, desiredAngle, 0.045);
+          this.speed += ((this.baseSpeed * 1.45) - this.speed) * 0.05;
+          if (closestDist < 16) {
+            targetFood.life = 0;
+            ripples.push(new Ripple(this.x, this.y, 45, 1.1, 0.35));
+          }
+        } else {
+          this.wanderAngle += (Math.random() - 0.5) * 0.14;
+          const margin = this.navConfig ? Math.min(width, height) * 0.15 : 110;
+          if (this.x < margin || this.x > width - margin || this.y < margin || this.y > height - margin) {
+            const centerAngle = Math.atan2(height * 0.5 - this.y, width * 0.5 - this.x);
+            this.wanderAngle = this.lerpAngle(this.wanderAngle, centerAngle, 0.08);
+          }
+          this.angle = this.lerpAngle(this.angle, this.wanderAngle, 0.025);
+          this.speed += ((this.baseSpeed * hoverSlowFactor) - this.speed) * 0.04;
+        }
+
+        this.swimPhase += 0.085 * (this.speed / this.baseSpeed);
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed;
+
+        const headSway = Math.sin(this.swimPhase) * 1.4 * this.scale;
+        const perpX = -Math.sin(this.angle);
+        const perpY = Math.cos(this.angle);
+
+        this.segments[0].x = this.x + perpX * headSway;
+        this.segments[0].y = this.y + perpY * headSway;
+
+        for (let i = 1; i < this.numSegments; i++) {
+          const prev = this.segments[i - 1];
+          const curr = this.segments[i];
+          const dx = prev.x - curr.x;
+          const dy = prev.y - curr.y;
+          const segAngle = Math.atan2(dy, dx);
+          const waveAmp = (i / this.numSegments) * 2.5 * this.scale;
+          const wave = Math.sin(this.swimPhase - i * 0.58) * waveAmp;
+          curr.x = prev.x - Math.cos(segAngle) * this.segSpacing - Math.sin(segAngle) * wave * 0.25;
+          curr.y = prev.y - Math.sin(segAngle) * this.segSpacing + Math.cos(segAngle) * wave * 0.25;
+        }
+      }
+
+      lerpAngle(a, b, t) {
+        let diff = b - a;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        return a + diff * t;
+      }
+
+      isPointNear(px, py) {
+        for (let i = 0; i < this.segments.length; i += 2) {
+          const seg = this.segments[i];
+          if (Math.hypot(px - seg.x, py - seg.y) <= (this.radii[i] + 16)) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      drawShadow(ctx) {
+        ctx.save();
+        ctx.translate(14, 20);
+        ctx.fillStyle = 'rgba(5, 20, 17, 0.28)';
+        for (let i = 0; i < this.numSegments; i++) {
+          const seg = this.segments[i];
+          ctx.beginPath();
+          ctx.arc(seg.x, seg.y, this.radii[i] * 0.95, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      draw(ctx) {
+        const s0 = this.segments[0];
+        const s2 = this.segments[2];
+        const s5 = this.segments[5];
+        const sLast = this.segments[this.numSegments - 1];
+        const sPrev = this.segments[this.numSegments - 2];
+
+        const headAngle = Math.atan2(s0.y - s2.y, s0.x - s2.x);
+        const tailAngle = Math.atan2(sLast.y - sPrev.y, sLast.x - sPrev.x);
+        const finFlutter = Math.sin(this.swimPhase * 0.9) * 0.22;
+
+        ctx.save();
+        if (this.navConfig && this.isHovered) {
+          ctx.shadowColor = 'rgba(253, 224, 71, 0.55)';
+          ctx.shadowBlur = 18;
+        }
+
+        this.drawSideFin(ctx, s2.x, s2.y, headAngle + 1.05 + finFlutter, 19 * this.scale, 8 * this.scale);
+        this.drawSideFin(ctx, s2.x, s2.y, headAngle - 1.05 - finFlutter, 19 * this.scale, 8 * this.scale);
+
+        const midAngle = Math.atan2(this.segments[4].y - s5.y, this.segments[4].x - s5.x);
+        this.drawSideFin(ctx, s5.x, s5.y, midAngle + 1.15 + finFlutter * 0.7, 11 * this.scale, 5 * this.scale);
+        this.drawSideFin(ctx, s5.x, s5.y, midAngle - 1.15 - finFlutter * 0.7, 11 * this.scale, 5 * this.scale);
+
+        ctx.save();
+        ctx.translate(sLast.x, sLast.y);
+        ctx.rotate(tailAngle);
+        const tailWag = Math.sin(this.swimPhase - 2.2) * 5 * this.scale;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(14 * this.scale, -12 * this.scale + tailWag, 26 * this.scale, -7 * this.scale + tailWag);
+        ctx.quadraticCurveTo(19 * this.scale, tailWag * 0.5, 26 * this.scale, 7 * this.scale + tailWag);
+        ctx.quadraticCurveTo(14 * this.scale, 12 * this.scale + tailWag, 0, 0);
+        ctx.fillStyle = this.palette.fin;
+        ctx.fill();
+        ctx.restore();
+
+        const leftPts = [];
+        const rightPts = [];
+        for (let i = 0; i < this.numSegments; i++) {
+          const curr = this.segments[i];
+          const ref = i === 0 ? this.segments[1] : this.segments[i - 1];
+          const a = i === 0
+            ? Math.atan2(curr.y - ref.y, curr.x - ref.x)
+            : Math.atan2(ref.y - curr.y, ref.x - curr.x);
+          const r = this.radii[i];
+          leftPts.push({ x: curr.x + Math.cos(a + Math.PI / 2) * r, y: curr.y + Math.sin(a + Math.PI / 2) * r });
+          rightPts.push({ x: curr.x + Math.cos(a - Math.PI / 2) * r, y: curr.y + Math.sin(a - Math.PI / 2) * r });
+        }
+
+        ctx.beginPath();
+        const noseX = s0.x + Math.cos(headAngle) * (this.radii[0] * 0.85);
+        const noseY = s0.y + Math.sin(headAngle) * (this.radii[0] * 0.85);
+        ctx.moveTo(noseX, noseY);
+        for (let i = 0; i < leftPts.length; i++) ctx.lineTo(leftPts[i].x, leftPts[i].y);
+        for (let i = rightPts.length - 1; i >= 0; i--) ctx.lineTo(rightPts[i].x, rightPts[i].y);
+        ctx.closePath();
+
+        ctx.fillStyle = this.palette.base;
+        ctx.fill();
+
+        ctx.save();
+        ctx.clip();
+        for (const spot of this.palette.spots) {
+          const idx = Math.min(this.numSegments - 1, Math.floor(spot.t * this.numSegments));
+          const seg = this.segments[idx];
+          const nextSeg = this.segments[Math.min(this.numSegments - 1, idx + 1)];
+          const segA = Math.atan2(seg.y - nextSeg.y, seg.x - nextSeg.x);
+          const sx = seg.x + Math.cos(segA + Math.PI / 2) * (spot.offset * this.radii[idx]);
+          const sy = seg.y + Math.sin(segA + Math.PI / 2) * (spot.offset * this.radii[idx]);
+          ctx.beginPath();
+          ctx.ellipse(sx, sy, this.radii[idx] * spot.r * 1.35, this.radii[idx] * spot.r * 0.9, segA, 0, Math.PI * 2);
+          ctx.fillStyle = spot.color;
+          ctx.fill();
+        }
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+        ctx.lineWidth = 3 * this.scale;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        for (let i = 1; i < 6; i++) {
+          if (i === 1) ctx.moveTo(this.segments[i].x, this.segments[i].y);
+          else ctx.lineTo(this.segments[i].x, this.segments[i].y);
+        }
+        ctx.stroke();
+        ctx.restore();
+
+        const eyeDist = this.radii[0] * 0.72;
+        const eyeForward = this.radii[0] * 0.25;
+        const ex1 = s0.x + Math.cos(headAngle) * eyeForward + Math.cos(headAngle + 1.35) * eyeDist;
+        const ey1 = s0.y + Math.sin(headAngle) * eyeForward + Math.sin(headAngle + 1.35) * eyeDist;
+        const ex2 = s0.x + Math.cos(headAngle) * eyeForward + Math.cos(headAngle - 1.35) * eyeDist;
+        const ey2 = s0.y + Math.sin(headAngle) * eyeForward + Math.sin(headAngle - 1.35) * eyeDist;
+
+        ctx.fillStyle = '#1b2224';
+        ctx.beginPath();
+        ctx.arc(ex1, ey1, 1.5 * this.scale, 0, Math.PI * 2);
+        ctx.arc(ex2, ey2, 1.5 * this.scale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      drawSideFin(ctx, x, y, angle, length, width) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(length * 0.55, -width, length, -width * 0.2);
+        ctx.quadraticCurveTo(length * 0.65, width * 0.6, 0, 0);
+        ctx.fillStyle = this.palette.fin;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function updateFishNavPills() {
+      const heroKoi = koiList.filter(k => k.navConfig && k.pillEl);
+      if (!heroKoi.length) return;
+
+      const padX = 64;
+      const padTop = 36;
+      const padBottom = 78;
+
+      for (const koi of heroKoi) {
+        const anchor = koi.segments[3] || koi.segments[0];
+        let targetX = anchor.x;
+        let targetY = anchor.y + (30 * koi.scale + 16);
+
+        targetX = Math.max(padX, Math.min(width - padX, targetX));
+        targetY = Math.max(padTop, Math.min(height - padBottom, targetY));
+
+        const dxCenter = targetX - width * 0.5;
+        const dyCenter = targetY - height * 0.48;
+        if (Math.abs(dxCenter) < 155 && Math.abs(dyCenter) < 62) {
+          targetY += dyCenter >= 0 ? (62 - Math.abs(dyCenter)) : -(62 - Math.abs(dyCenter));
+        }
+
+        koi.pillX += (targetX - koi.pillX) * 0.14;
+        koi.pillY += (targetY - koi.pillY) * 0.14;
+      }
+
+      for (let i = 0; i < heroKoi.length; i++) {
+        for (let j = i + 1; j < heroKoi.length; j++) {
+          const a = heroKoi[i];
+          const b = heroKoi[j];
+          const dx = b.pillX - a.pillX;
+          const dy = b.pillY - a.pillY;
+          if (Math.abs(dx) < 118 && Math.abs(dy) < 42) {
+            const pushY = (42 - Math.abs(dy)) * 0.35 * (dy >= 0 ? 1 : -1);
+            const pushX = (118 - Math.abs(dx)) * 0.18 * (dx >= 0 ? 1 : -1);
+            a.pillX -= pushX;
+            b.pillX += pushX;
+            a.pillY -= pushY;
+            b.pillY += pushY;
+          }
+        }
+      }
+
+      for (const koi of heroKoi) {
+        koi.pillEl.style.transform = `translate3d(${koi.pillX.toFixed(1)}px, ${koi.pillY.toFixed(1)}px, 0) translate(-50%, -50%)`;
+      }
+    }
+
+    function initPond() {
+      resize();
+      fishNavLayer.innerHTML = '';
+      koiList = [];
+      lilyPads = [];
+      floatingPetals = [];
+
+      const isMobile = width < 640;
+      const baseScale = isMobile ? 0.78 : 1.0;
+
+      const startPositions = [
+        { x: width * 0.25, y: height * 0.30 },
+        { x: width * 0.74, y: height * 0.32 },
+        { x: width * 0.27, y: height * 0.72 },
+        { x: width * 0.73, y: height * 0.70 }
+      ];
+
+      HERO_FISH_PAGES.forEach((navConfig, idx) => {
+        const pos = startPositions[idx];
+        const palette = KOI_PALETTES[idx % KOI_PALETTES.length];
+        const scale = (0.98 + (idx % 2) * 0.12) * baseScale;
+        koiList.push(new KoiFish(pos.x, pos.y, scale, palette, navConfig));
+      });
+
+      const companionCount = isMobile ? 2 : 3;
+      for (let i = 0; i < companionCount; i++) {
+        const palette = KOI_PALETTES[(i + 1) % KOI_PALETTES.length];
+        const scale = (0.64 + Math.random() * 0.2) * baseScale;
+        koiList.push(
+          new KoiFish(
+            width * (0.2 + Math.random() * 0.6),
+            height * (0.2 + Math.random() * 0.6),
+            scale,
+            palette,
+            null
+          )
+        );
+      }
+
+      const padSpecs = [
+        { rx: 0.14, ry: 0.18, r: isMobile ? 34 : 52, flower: false },
+        { rx: 0.23, ry: 0.14, r: isMobile ? 22 : 34, flower: true, color: '#f3a6be' },
+        { rx: 0.85, ry: 0.22, r: isMobile ? 38 : 58, flower: true, color: '#f6b8cb' },
+        { rx: 0.79, ry: 0.14, r: isMobile ? 20 : 30, flower: false },
+        { rx: 0.12, ry: 0.78, r: isMobile ? 36 : 54, flower: true, color: '#f9d5e0' },
+        { rx: 0.88, ry: 0.82, r: isMobile ? 32 : 48, flower: false },
+        { rx: 0.50, ry: 0.11, r: isMobile ? 18 : 26, flower: false }
+      ];
+
+      for (const spec of padSpecs) {
+        lilyPads.push(new LilyPad(width * spec.rx, height * spec.ry, spec.r, spec.flower, spec.color));
+      }
+
+      for (let i = 0; i < 10; i++) {
+        floatingPetals.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          r: 2.5 + Math.random() * 2.5,
+          angle: Math.random() * Math.PI * 2,
+          speedX: 0.12 + Math.random() * 0.18,
+          speedY: (Math.random() - 0.5) * 0.12
+        });
+      }
+    }
+
+    function drawPondWater(time) {
+      const grad = ctx.createRadialGradient(
+        width * 0.5,
+        height * 0.45,
+        40,
+        width * 0.5,
+        height * 0.5,
+        Math.max(width, height) * 0.85
+      );
+      grad.addColorStop(0, '#2c655a');
+      grad.addColorStop(0.55, '#1d4b42');
+      grad.addColorStop(1, '#11302a');
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.save();
+      ctx.globalAlpha = 0.045;
+      for (let i = 0; i < 4; i++) {
+        const cx = width * (0.25 + i * 0.18) + Math.sin(time * 0.0004 + i) * 35;
+        const cy = height * (0.35 + (i % 2) * 0.3) + Math.cos(time * 0.0005 + i) * 30;
+        const rad = 140 + i * 35;
+        const shimmer = ctx.createRadialGradient(cx, cy, 10, cx, cy, rad);
+        shimmer.addColorStop(0, '#b5f5e5');
+        shimmer.addColorStop(1, 'transparent');
+        ctx.fillStyle = shimmer;
+        ctx.beginPath();
+        ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function animate(time = 0) {
+      drawPondWater(time);
+
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        ripples[i].update();
+        ripples[i].draw(ctx);
+        if (ripples[i].alpha <= 0.01) ripples.splice(i, 1);
+      }
+
+      for (let i = foodCrumbs.length - 1; i >= 0; i--) {
+        foodCrumbs[i].update();
+        foodCrumbs[i].draw(ctx);
+        if (foodCrumbs[i].life <= 0) foodCrumbs.splice(i, 1);
+      }
+
+      for (const koi of koiList) {
+        koi.update(time);
+        koi.drawShadow(ctx);
+      }
+      for (const koi of koiList) {
+        koi.draw(ctx);
+      }
+
+      if (!zenMode) {
+        updateFishNavPills();
+      }
+
+      ctx.save();
+      for (const p of floatingPetals) {
+        p.x += p.speedX;
+        p.y += p.speedY + Math.sin(time * 0.001 + p.x * 0.01) * 0.08;
+        p.angle += 0.005;
+        if (p.x > width + 15) p.x = -15;
+        if (p.y > height + 15) p.y = -15;
+        if (p.y < -15) p.y = height + 15;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.r * 1.4, p.r * 0.85, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(250, 214, 226, 0.55)';
+        ctx.fill();
+        ctx.restore();
+      }
+      ctx.restore();
+
+      for (const pad of lilyPads) {
+        pad.update(time);
+        pad.draw(ctx);
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function interactWithWater(x, y, dropFood = true) {
+      if (!hasInteracted) {
+        hasInteracted = true;
+        const hint = document.getElementById('pondHint');
+        if (hint) hint.style.opacity = '0';
+      }
+
+      ripples.push(new Ripple(x, y, 115, 1.5, 0.48));
+      playWaterChime();
+
+      for (const pad of lilyPads) {
+        pad.nudge(x, y);
+      }
+
+      if (dropFood) {
+        const count = 2 + Math.floor(Math.random() * 2);
+        for (let i = 0; i < count; i++) {
+          foodCrumbs.push(new FoodCrumb(x, y));
+        }
+      }
+    }
+
+    let lastWakeTime = 0;
+    canvas.addEventListener('pointermove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      let hoveringHeroKoi = false;
+      for (const koi of koiList) {
+        if (!koi.navConfig) continue;
+        const over = koi.isPointNear(x, y);
+        koi.isHovered = over;
+        if (koi.pillEl) {
+          koi.pillEl.classList.toggle('is-hovered', over);
+        }
+        if (over) hoveringHeroKoi = true;
+      }
+
+      canvas.style.cursor = hoveringHeroKoi ? 'pointer' : 'crosshair';
+
+      const now = performance.now();
+      if (now - lastWakeTime > 120) {
+        ripples.push(new Ripple(x, y, 42, 0.85, 0.18));
+        lastWakeTime = now;
+      }
+    });
+
+    canvas.addEventListener('pointerdown', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      for (const koi of koiList) {
+        if (koi.navConfig && koi.isPointNear(x, y)) {
+          ripples.push(new Ripple(x, y, 75, 1.3, 0.42));
+          playWaterChime();
+          openModal(koi.navConfig.key);
+          return;
+        }
+      }
+
+      interactWithWater(x, y, true);
+    });
+
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalCard = document.getElementById('modalCard');
+    const modalEyebrow = document.getElementById('modalEyebrow');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastBanner');
+      const toastText = document.getElementById('toastText');
+      toastText.textContent = msg;
+      toast.classList.remove('opacity-0', '-translate-y-2');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-2');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 2200);
+    }
+
+    const modalTemplates = {
+      about: {
+        eyebrow: 'about me',
+        title: 'hi, i’m anokhi :)',
+        html: `
+          <div class="p-5 rounded-2xl bg-white/[0.06] border border-white/15 space-y-2.5">
+            <p class="text-white/95 text-[15px] sm:text-base font-normal leading-relaxed">
+              I’m a <span class="text-emerald-200 font-medium">Business Administration</span> student at <span class="text-emerald-200 font-medium">Binghamton University</span> fascinated by the intersection of <span class="text-emerald-200 font-medium">marketing</span>, <span class="text-emerald-200 font-medium">analytics</span>, and creating <span class="text-emerald-200 font-medium">unique digital experiences</span>.
+            </p>
+            <p class="text-xs sm:text-[13px] text-white/75 leading-relaxed">
+              Whether I’m digging into consumer data to uncover why an audience connects with a story, or designing campaigns that feel warm, memorable, and authentic, I love turning strategic insights into experiences people genuinely enjoy exploring.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-stretch">
+            <label id="aboutPhotoFrame" for="aboutPhotoUpload"
+              style="height: 245px;"
+              class="sm:col-span-5 group relative flex flex-col items-center justify-center w-full rounded-2xl bg-white/[0.06] border border-dashed border-white/25 hover:border-emerald-200/55 hover:bg-white/[0.09] transition overflow-hidden cursor-pointer">
+              <img id="aboutPhotoImg" src="${IMAGE_URLS.aboutPhoto}" alt="Anokhi" class="hidden absolute inset-0 w-full h-full object-cover object-top" />
+              <div id="aboutPhotoPlaceholder" class="flex flex-col items-center text-center px-4 py-6">
+                <div class="w-10 h-10 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-base mb-2.5 group-hover:scale-105 transition">
+                  📷
+                </div>
+                <p class="text-xs font-medium text-white/90">add your photo</p>
+                <p class="text-[11px] text-white/55 mt-1 leading-snug">click to preview an image here</p>
+              </div>
+              <input id="aboutPhotoUpload" type="file" accept="image/*" class="hidden" />
+            </label>
+
+            <div class="sm:col-span-7 flex flex-col justify-between gap-2.5">
+              <div class="flex-1 px-5 py-4 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-emerald-200/35 transition flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <span class="w-2 h-2 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(110,231,183,0.75)]"></span>
+                  <h3 class="font-editorial text-2xl sm:text-[26px] text-white tracking-wide">Marketing</h3>
+                </div>
+                <span class="text-[11px] uppercase tracking-widest text-white/40">01</span>
+              </div>
+
+              <div class="flex-1 px-5 py-4 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-amber-200/35 transition flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <span class="w-2 h-2 rounded-full bg-amber-300 shadow-[0_0_10px_rgba(252,211,77,0.75)]"></span>
+                  <h3 class="font-editorial text-2xl sm:text-[26px] text-white tracking-wide">Analytics</h3>
+                </div>
+                <span class="text-[11px] uppercase tracking-widest text-white/40">02</span>
+              </div>
+
+              <div class="flex-1 px-5 py-4 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-pink-200/35 transition flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <span class="w-2 h-2 rounded-full bg-pink-300 shadow-[0_0_10px_rgba(249,168,212,0.75)]"></span>
+                  <h3 class="font-editorial text-2xl sm:text-[26px] text-white tracking-wide">Digital Design</h3>
+                </div>
+                <span class="text-[11px] uppercase tracking-widest text-white/40">03</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div class="p-3.5 rounded-2xl bg-white/[0.05] border border-white/10">
+              <p class="text-[10px] uppercase tracking-widest text-white/50 mb-1">discipline & focus</p>
+              <p class="text-white/90 font-medium">B.S. in Business Administration — Marketing &amp; Management Information Systems</p>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-white/[0.05] border border-white/10">
+              <p class="text-[10px] uppercase tracking-widest text-white/50 mb-1">outside the spreadsheet</p>
+              <p class="text-white/90 font-medium">bagel spots · moodboarding · reading novels · creative coding</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <div class="flex flex-wrap gap-1.5 text-[11px]">
+              <span class="px-3 py-1 rounded-full bg-white/10 text-white/85">brand strategy</span>
+              <span class="px-3 py-1 rounded-full bg-white/10 text-white/85">growth analytics</span>
+              <span class="px-3 py-1 rounded-full bg-white/10 text-white/85">digital design</span>
+              <span class="px-3 py-1 rounded-full bg-white/10 text-white/85">social media</span>
+            </div>
+
+            <div class="flex items-center gap-2 text-xs">
+              <a href="https://www.linkedin.com/in/anokhi-shukla" target="_blank" rel="noopener noreferrer"
+                class="px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white transition">
+                linkedin ↗
+              </a>
+              <a href="mailto:anokhishukla4@gmail.com"
+                class="px-3.5 py-1.5 rounded-full bg-emerald-400/25 hover:bg-emerald-400/35 border border-emerald-200/30 text-white transition">
+                say hi ✉
+              </a>
+            </div>
+          </div>
+        `
+      },
+      projects: {
+        eyebrow: 'selected work & decks',
+        title: 'projects',
+        html: `
+          <p class="text-xs sm:text-[13px] text-white/75 leading-relaxed">
+            Strategic campaigns, brand expansions, and case competition decks. Click any project to view the full presentation or preview your experience photos.
+          </p>
+
+          <div class="space-y-3.5">
+            <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition flex flex-col sm:flex-row gap-4 items-stretch">
+              <label for="projPhoto1"
+                class="group relative sm:w-44 aspect-video sm:aspect-[16/10] shrink-0 rounded-xl bg-black/25 border border-dashed border-white/25 hover:border-emerald-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
+                <img id="projPhotoImg1" src="${IMAGE_URLS.spotifyProject}" alt="Marketing Accelerator Program: Expansion Campaign" class="hidden absolute inset-0 w-full h-full object-cover" />
+                <div id="projPhotoPlaceholder1" class="flex flex-col items-center text-center p-2">
+                  <span class="text-sm mb-1">🖼️</span>
+                  <span class="text-[10px] text-white/75 font-medium">add photo</span>
+                </div>
+                <input id="projPhoto1" type="file" accept="image/*" class="hidden" />
+              </label>
+
+              <div class="flex-1 flex flex-col justify-between gap-3">
+                <div>
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-[11px] uppercase tracking-wider text-emerald-200/85">Mar 2026 — May 2026</span>
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-400/15 border border-emerald-200/25 text-emerald-100">Spotify Wrapped</span>
+                  </div>
+                  <h3 class="font-medium text-white text-base sm:text-[17px] mt-1">
+                    Marketing Accelerator Program: Expansion Campaign
+                  </h3>
+                  <p class="text-xs text-white/70 mt-1 leading-relaxed">
+                    Designed an expansion campaign strategy for Spotify Wrapped, blending consumer insights with interactive digital storytelling.
+                  </p>
+                </div>
+
+                <div class="flex items-center justify-between pt-1">
+                  <a href="https://www.canva.com/design/DAHC_tgOHWU/EX6PjSXnx5M2Kosn1fe50g/view?utm_content=DAHC_tgOHWU&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3b9ca528c7"
+                     target="_blank" rel="noopener noreferrer"
+                     class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-xs font-medium text-white transition">
+                    <span>view presentation</span>
+                    <span>↗</span>
+                  </a>
+                  <span class="text-[11px] text-white/45">canva deck</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition flex flex-col sm:flex-row gap-4 items-stretch">
+              <label for="projPhoto2"
+                class="group relative sm:w-44 aspect-video sm:aspect-[16/10] shrink-0 rounded-xl bg-black/25 border border-dashed border-white/25 hover:border-amber-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
+                <img id="projPhotoImg2" src="${IMAGE_URLS.bumaHorizon}" alt="BUMA x Horizon Media Case Competition" class="hidden absolute inset-0 w-full h-full object-cover" />
+                <div id="projPhotoPlaceholder2" class="flex flex-col items-center text-center p-2">
+                  <span class="text-sm mb-1">🖼️</span>
+                  <span class="text-[10px] text-white/75 font-medium">add photo</span>
+                </div>
+                <input id="projPhoto2" type="file" accept="image/*" class="hidden" />
+              </label>
+
+              <div class="flex-1 flex flex-col justify-between gap-3">
+                <div>
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-[11px] uppercase tracking-wider text-amber-200/85">Feb 2026 — Mar 2026</span>
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-200/30 text-amber-100 font-medium">★ Finalist</span>
+                  </div>
+                  <h3 class="font-medium text-white text-base sm:text-[17px] mt-1">
+                    BUMA x Horizon Media Case Competition
+                  </h3>
+                  <p class="text-xs text-white/70 mt-1 leading-relaxed">
+                    Developed a research driven media and creative campaign proposal with Summit Solutions, advancing as a competition finalist.
+                  </p>
+                </div>
+
+                <div class="flex items-center justify-between pt-1">
+                  <a href="https://binghamton-my.sharepoint.com/:p:/g/personal/ashukla7_binghamton_edu/IQCxvY0IJxkZSq7TVB5kRbrBAdDB9u8qyz-wQw9LmNuJxjA?rtime=HML08xRJ30g"
+                     target="_blank" rel="noopener noreferrer"
+                     class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-xs font-medium text-white transition">
+                    <span>view presentation</span>
+                    <span>↗</span>
+                  </a>
+                  <span class="text-[11px] text-white/45">slide deck</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition flex flex-col sm:flex-row gap-4 items-stretch">
+              <label for="projPhoto3"
+                class="group relative sm:w-44 aspect-video sm:aspect-[16/10] shrink-0 rounded-xl bg-black/25 border border-dashed border-white/25 hover:border-pink-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
+                <img id="projPhotoImg3" src="${IMAGE_URLS.eyTechx}" alt="EY TechX Case Competition" class="hidden absolute inset-0 w-full h-full object-cover" />
+                <div id="projPhotoPlaceholder3" class="flex flex-col items-center text-center p-2">
+                  <span class="text-sm mb-1">🖼️</span>
+                  <span class="text-[10px] text-white/75 font-medium">add photo</span>
+                </div>
+                <input id="projPhoto3" type="file" accept="image/*" class="hidden" />
+              </label>
+
+              <div class="flex-1 flex flex-col justify-between gap-3">
+                <div>
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-[11px] uppercase tracking-wider text-pink-200/85">Oct 2025</span>
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-pink-400/20 border border-pink-200/30 text-pink-100 font-medium">✦ Semifinalist</span>
+                  </div>
+                  <h3 class="font-medium text-white text-base sm:text-[17px] mt-1">
+                    EY TechX Case Competition
+                  </h3>
+                  <p class="text-xs text-white/70 mt-1 leading-relaxed">
+                    Crafted a tech enabled growth and brand experience strategy for Nike with Pentra Solutions, placing as a semifinalist.
+                  </p>
+                </div>
+
+                <div class="flex items-center justify-between pt-1">
+                  <a href="https://www.canva.com/design/DAHJT76oDGM/8bPRyWMMOiZZQBrYh8yvUA/view?utm_content=DAHJT76oDGM&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hfc831035d8"
+                     target="_blank" rel="noopener noreferrer"
+                     class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-xs font-medium text-white transition">
+                    <span>view presentation</span>
+                    <span>↗</span>
+                  </a>
+                  <span class="text-[11px] text-white/45">case deck</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      work: {
+        eyebrow: 'career & internships',
+        title: 'work',
+        html: `
+          <div class="space-y-4">
+            <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3.5">
+              <div class="flex items-start gap-3.5">
+                <label for="workLogo1" id="workLogoFrame1"
+                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-emerald-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
+                  <img id="workLogoImg1" src="${IMAGE_URLS.belleLogo}" alt="Belle The Agency logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
+                  <div id="workLogoPlaceholder1" class="flex flex-col items-center text-center">
+                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
+                  </div>
+                  <input id="workLogo1" type="file" accept="image/*" class="hidden" />
+                </label>
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 class="font-medium text-white text-base sm:text-[17px]">Belle The Agency</h3>
+                      <p class="text-xs text-emerald-200/90 mt-0.5">Data Analytics &amp; Insights Intern · Kauai, Hawaii</p>
+                    </div>
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-400/15 border border-emerald-200/25 text-emerald-100 whitespace-nowrap">
+                      May 2026 — Present
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <ul class="space-y-2 text-xs sm:text-[13px] text-white/80 leading-relaxed pl-1">
+                <li class="flex items-start gap-2.5">
+                  <span class="text-emerald-300 mt-1 text-[10px]">●</span>
+                  <span>Turn social media performance metrics and audience engagement trends into fresh campaign concepts and short form video pitches across Kauai.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-emerald-300 mt-1 text-[10px]">●</span>
+                  <span>Author 10+ SEO driven blogs and web features monthly covering brand strategy, island news, and client spotlights to elevate organic search visibility.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-emerald-300 mt-1 text-[10px]">●</span>
+                  <span>Design and edit 60+ short form videos for Instagram, TikTok, Facebook, and YouTube across food &amp; beverage, retail, lifestyle, beauty, and textiles.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3.5">
+              <div class="flex items-start gap-3.5">
+                <label for="workLogo2" id="workLogoFrame2"
+                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-amber-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
+                  <img id="workLogoImg2" src="${IMAGE_URLS.museumLogo}" alt="Binghamton University Art Museum logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
+                  <div id="workLogoPlaceholder2" class="flex flex-col items-center text-center">
+                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
+                  </div>
+                  <input id="workLogo2" type="file" accept="image/*" class="hidden" />
+                </label>
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 class="font-medium text-white text-base sm:text-[17px]">Binghamton University Art Museum</h3>
+                      <p class="text-xs text-amber-200/90 mt-0.5">Front Desk Services · Binghamton, New York</p>
+                    </div>
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-400/15 border border-amber-200/25 text-amber-100 whitespace-nowrap">
+                      March 2026 — Present
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <ul class="space-y-2 text-xs sm:text-[13px] text-white/80 leading-relaxed pl-1">
+                <li class="flex items-start gap-2.5">
+                  <span class="text-amber-300 mt-1 text-[10px]">●</span>
+                  <span>Coordinate daily gallery operations, visitor check ins, and departmental records in alignment with Art History exhibition themes.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="text-amber-300 mt-1 text-[10px]">●</span>
+                  <span>Foster a welcoming gallery atmosphere for students, artists, faculty, and guests while safeguarding exhibited works throughout visiting hours.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        `
+      },
+      leadership: {
+        eyebrow: 'community & impact',
+        title: 'leadership',
+        html: `
+          <p class="text-xs sm:text-[13px] text-white/75 leading-relaxed">
+            Initiatives I have led and contributed to across student organizations, creative direction, and campus community building at Binghamton University.
+          </p>
+
+          <div class="space-y-3.5">
+            <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3">
+              <div class="flex items-start gap-3.5">
+                <label for="leadLogo1"
+                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-emerald-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
+                  <img id="leadLogoImg1" src="${IMAGE_URLS.bumaLogo}" alt="Binghamton University Marketing Association logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
+                  <div id="leadLogoPlaceholder1" class="flex flex-col items-center text-center">
+                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
+                  </div>
+                  <input id="leadLogo1" type="file" accept="image/*" class="hidden" />
+                </label>
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 class="font-medium text-white text-base sm:text-[17px]">Binghamton University Marketing Association</h3>
+                      <p class="text-xs text-emerald-200/95 font-medium mt-0.5">Vice President</p>
+                    </div>
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-400/15 border border-emerald-200/25 text-emerald-100 whitespace-nowrap">
+                      Dec 2026 — Present
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-white/55 mt-1 leading-snug">
+                    Previously: Content Creation Committee Manager (May 2026 — Dec 2026) · Content Creation Committee Chair (Sep 2025 — May 2026)
+                  </p>
+                </div>
+              </div>
+
+              <p class="text-xs sm:text-[13px] text-white/80 leading-relaxed">
+                Direct executive board operations, School of Management marketing initiatives, and industry partnerships/events for students.
+              </p>
+            </div>
+
+            <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3">
+              <div class="flex items-start gap-3.5">
+                <label for="leadLogo2"
+                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-amber-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
+                  <img id="leadLogoImg2" src="${IMAGE_URLS.mapLogo}" alt="Marketing Accelerator Program logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
+                  <div id="leadLogoPlaceholder2" class="flex flex-col items-center text-center">
+                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
+                  </div>
+                  <input id="leadLogo2" type="file" accept="image/*" class="hidden" />
+                </label>
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 class="font-medium text-white text-base sm:text-[17px]">Marketing Accelerator Program</h3>
+                      <p class="text-xs text-amber-200/95 font-medium mt-0.5">Internal Committee Chair</p>
+                    </div>
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-400/15 border border-amber-200/25 text-amber-100 whitespace-nowrap">
+                      Aug 2026 — Present
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-white/55 mt-1 leading-snug">
+                    Previously: Marketing Accelerator Program Mentee (Mar 2026 — May 2026)
+                  </p>
+                </div>
+              </div>
+
+              <p class="text-xs sm:text-[13px] text-white/80 leading-relaxed">
+                Assisted with leading cohort programming, internal workshops, peer mentorship experiences, and provided personal experiences after completing the intensive track.
+              </p>
+            </div>
+
+            <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3">
+              <div class="flex items-start gap-3.5">
+                <label for="leadLogo3"
+                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-pink-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
+                  <img id="leadLogoImg3" src="${IMAGE_URLS.bhangraLogo}" alt="Binghamton Bhangra logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
+                  <div id="leadLogoPlaceholder3" class="flex flex-col items-center text-center">
+                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
+                  </div>
+                  <input id="leadLogo3" type="file" accept="image/*" class="hidden" />
+                </label>
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 class="font-medium text-white text-base sm:text-[17px]">Binghamton Bhangra</h3>
+                      <p class="text-xs text-pink-200/95 font-medium mt-0.5">Promotional Relations Chair &amp; Competition Team Member</p>
+                    </div>
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-pink-400/15 border border-pink-200/25 text-pink-100 whitespace-nowrap">
+                      Sep 2025 — Present
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-xs sm:text-[13px] text-white/80 leading-relaxed">
+                Spearhead promotional campaigns, showcase branding, and audience outreach while performing on the collegiate competitive dance roster.
+              </p>
+            </div>
+
+            <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3">
+              <div class="flex items-start gap-3.5">
+                <label for="leadLogo4"
+                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-emerald-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
+                  <img id="leadLogoImg4" src="${IMAGE_URLS.hscLogo}" alt="Hindu Student Council logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
+                  <div id="leadLogoPlaceholder4" class="flex flex-col items-center text-center">
+                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
+                  </div>
+                  <input id="leadLogo4" type="file" accept="image/*" class="hidden" />
+                </label>
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 class="font-medium text-white text-base sm:text-[17px]">Hindu Student Council</h3>
+                      <p class="text-xs text-emerald-200/95 font-medium mt-0.5">Social Media Director</p>
+                    </div>
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-400/15 border border-emerald-200/25 text-emerald-100 whitespace-nowrap">
+                      Apr 2026 — Present
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-white/55 mt-1 leading-snug">
+                    Previously: Hindu Student Council Intern (Oct 2025 — Apr 2026)
+                  </p>
+                </div>
+              </div>
+
+              <p class="text-xs sm:text-[13px] text-white/80 leading-relaxed">
+                Curate visual identity, event promotion, and community engagement across digital channels to drive campus turnout for cultural programming.
+              </p>
+            </div>
+
+            <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3">
+              <div class="flex items-start gap-3.5">
+                <label for="leadLogo5"
+                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-amber-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
+                  <img id="leadLogoImg5" src="${IMAGE_URLS.absaLogo}" alt="Asian Business Student Association logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
+                  <div id="leadLogoPlaceholder5" class="flex flex-col items-center text-center">
+                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
+                  </div>
+                  <input id="leadLogo5" type="file" accept="image/*" class="hidden" />
+                </label>
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 class="font-medium text-white text-base sm:text-[17px]">Asian Business Student Association</h3>
+                      <p class="text-xs text-amber-200/95 font-medium mt-0.5">Digital Media Chair</p>
+                    </div>
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-white/80 whitespace-nowrap">
+                      Feb 2026 — May 2026
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-xs sm:text-[13px] text-white/80 leading-relaxed">
+                Designed cohesive graphic assets, reels, and digital campaigns spotlighting professional development panels and networking events.
+              </p>
+            </div>
+
+            <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3">
+              <div class="flex items-start gap-3.5">
+                <label for="leadLogo6"
+                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-pink-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
+                  <img id="leadLogoImg6" src="${IMAGE_URLS.elpLogo}" alt="Emerging Leaders Program logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
+                  <div id="leadLogoPlaceholder6" class="flex flex-col items-center text-center">
+                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
+                  </div>
+                  <input id="leadLogo6" type="file" accept="image/*" class="hidden" />
+                </label>
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 class="font-medium text-white text-base sm:text-[17px]">Emerging Leaders Program</h3>
+                      <p class="text-xs text-pink-200/95 font-medium mt-0.5">Global Awareness &amp; Citizenship Marketing Director</p>
+                    </div>
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-white/80 whitespace-nowrap">
+                      Aug 2025 — Dec 2025
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-xs sm:text-[13px] text-white/80 leading-relaxed">
+                Led marketing strategy and outreach campaigns for cohort civic engagement and global awareness initiatives across campus.
+              </p>
+            </div>
+          </div>
+        `
+      }
+    };
+
+    const uploadedImages = {};
+
+    function applyImageToModal(imgId, placeholderId, dataUrl) {
+      const imgEl = document.getElementById(imgId);
+      const placeholderEl = document.getElementById(placeholderId);
+      const fileInput = imgEl ? imgEl.parentElement.querySelector('input[type="file"]') : null;
+      if (!imgEl || !placeholderEl) return;
+
+      if (dataUrl) {
+        imgEl.src = dataUrl;
+      }
+      imgEl.classList.remove('hidden');
+      placeholderEl.classList.add('hidden');
+      const frameEl = fileInput ? fileInput.closest('label') : imgEl.closest('label');
+      if (frameEl) {
+        frameEl.classList.remove('border-dashed', 'border-white/25', 'bg-white/[0.08]');
+        frameEl.classList.add('border-solid', 'border-white/20', 'bg-transparent');
+      }
+    }
+
+    function bindImageUploader(inputId, imgId, placeholderId, successMsg) {
+      const fileInput = document.getElementById(inputId);
+      const imgEl = document.getElementById(imgId);
+      const placeholderEl = document.getElementById(placeholderId);
+      if (!fileInput || !imgEl || !placeholderEl) return;
+
+      if (uploadedImages[imgId]) {
+        applyImageToModal(imgId, placeholderId, uploadedImages[imgId]);
+      } else if (imgEl.getAttribute('src')) {
+        if (imgEl.complete && imgEl.naturalWidth > 0) {
+          applyImageToModal(imgId, placeholderId, null);
+        } else {
+          imgEl.addEventListener('load', () => applyImageToModal(imgId, placeholderId, null), { once: true });
+        }
+      }
+
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const dataUrl = ev.target.result;
+          uploadedImages[imgId] = dataUrl;
+          applyImageToModal(imgId, placeholderId, dataUrl);
+          showToast(successMsg);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function openModal(key) {
+      const data = modalTemplates[key];
+      if (!data) return;
+
+      modalEyebrow.textContent = data.eyebrow;
+      modalTitle.textContent = data.title;
+      modalBody.innerHTML = data.html;
+
+      document.querySelectorAll('.quick-tab-btn').forEach(btn => {
+        const isCurrent = btn.dataset.modalTab === key;
+        btn.classList.toggle('bg-white/25', isCurrent);
+        btn.classList.toggle('text-white', isCurrent);
+        btn.classList.toggle('bg-white/10', !isCurrent);
+      });
+
+      modalBackdrop.classList.remove('hidden');
+      modalBackdrop.classList.add('flex');
+
+      requestAnimationFrame(() => {
+        modalBackdrop.classList.remove('opacity-0');
+        modalCard.classList.remove('scale-95', 'opacity-0');
+        modalCard.classList.add('scale-100', 'opacity-100');
+      });
+
+      if (key === 'about') {
+        bindImageUploader('aboutPhotoUpload', 'aboutPhotoImg', 'aboutPhotoPlaceholder', 'Photo added to About Me!');
+      }
+      if (key === 'projects') {
+        bindImageUploader('projPhoto1', 'projPhotoImg1', 'projPhotoPlaceholder1', 'Photo added to Expansion Campaign!');
+        bindImageUploader('projPhoto2', 'projPhotoImg2', 'projPhotoPlaceholder2', 'Photo added to BUMA x Horizon Media!');
+        bindImageUploader('projPhoto3', 'projPhotoImg3', 'projPhotoPlaceholder3', 'Photo added to EY TechX!');
+      }
+      if (key === 'work') {
+        bindImageUploader('workLogo1', 'workLogoImg1', 'workLogoPlaceholder1', 'Logo added for Belle The Agency!');
+        bindImageUploader('workLogo2', 'workLogoImg2', 'workLogoPlaceholder2', 'Logo added for Binghamton University Art Museum!');
+      }
+      if (key === 'leadership') {
+        bindImageUploader('leadLogo1', 'leadLogoImg1', 'leadLogoPlaceholder1', 'Logo added for BUMA!');
+        bindImageUploader('leadLogo2', 'leadLogoImg2', 'leadLogoPlaceholder2', 'Logo added for Marketing Accelerator Program!');
+        bindImageUploader('leadLogo3', 'leadLogoImg3', 'leadLogoPlaceholder3', 'Logo added for Binghamton Bhangra!');
+        bindImageUploader('leadLogo4', 'leadLogoImg4', 'leadLogoPlaceholder4', 'Logo added for Hindu Student Council!');
+        bindImageUploader('leadLogo5', 'leadLogoImg5', 'leadLogoPlaceholder5', 'Logo added for Asian Business Student Association!');
+        bindImageUploader('leadLogo6', 'leadLogoImg6', 'leadLogoPlaceholder6', 'Logo added for Emerging Leaders Program!');
+      }
+    }
+
+    function closeModal() {
+      modalBackdrop.classList.add('opacity-0');
+      modalCard.classList.remove('scale-100', 'opacity-100');
+      modalCard.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modalBackdrop.classList.add('hidden');
+        modalBackdrop.classList.remove('flex');
+      }, 280);
+    }
+
+    document.querySelectorAll('.quick-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => openModal(btn.dataset.modalTab));
+    });
+
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    document.getElementById('backToPondBtn').addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) closeModal();
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    document.getElementById('feedFishBtn').addEventListener('click', () => {
+      for (let i = 0; i < 4; i++) {
+        const rx = width * (0.25 + Math.random() * 0.5);
+        const ry = height * (0.25 + Math.random() * 0.5);
+        interactWithWater(rx, ry, true);
+      }
+      showToast('Scattered koi food across the pond ✨');
+    });
+
+    document.getElementById('soundToggleBtn').addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      document.getElementById('soundIcon').textContent = soundEnabled ? '🔔' : '🔇';
+      if (soundEnabled) {
+        playWaterChime();
+        showToast('Water chimes enabled');
+      } else {
+        showToast('Water chimes muted');
+      }
+    });
+
+    document.getElementById('zenToggleBtn').addEventListener('click', () => {
+      zenMode = !zenMode;
+      const heroOverlay = document.getElementById('heroOverlay');
+      heroOverlay.style.opacity = zenMode ? '0' : '1';
+      fishNavLayer.style.opacity = zenMode ? '0' : '1';
+      document.querySelectorAll('.fish-nav-pill').forEach(el => {
+        el.style.pointerEvents = zenMode ? 'none' : 'auto';
+      });
+      document.getElementById('zenLabel').textContent = zenMode ? 'show ui' : 'zen mode';
+    });
+
+    window.addEventListener('resize', resize);
+    window.addEventListener('load', () => {
+      initPond();
+      animate();
+    });
+  </script>
+</body>
+</html>
